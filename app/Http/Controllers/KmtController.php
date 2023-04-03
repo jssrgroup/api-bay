@@ -8,6 +8,7 @@ use App\Models\Callback;
 use App\firebaseRDB;
 use App\Models\Log;
 use App\Models\Qrcode;
+use SimpleSoftwareIO\QrCode\Facades\QrCode as GQrcode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -129,7 +130,7 @@ class KmtController extends BaseController
                         'trxId' => $responseArr['trxId'],
                         'terminalId' => $data['terminalId'],
                         'qrcodeContent' => $responseArr['qrcodeContent'], //$responseArr['qrcodeContent'], //
-                        'qrcode' => base64_encode(QrCode::size(200)->format('png')->generate($responseArr['qrcodeContent'])),
+                        'qrcode' => base64_encode(GQrcode::size(200)->format('png')->generate($responseArr['qrcodeContent'])),
                     ];
 
                     Qrcode::create($res);
@@ -321,6 +322,63 @@ class KmtController extends BaseController
         } else {
             $data = json_decode($response);
             return $this->sendResponse($data, 'Settle list retrived successfully.');
+        }
+    }
+
+    public function verify(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'trxQr' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $data = [
+            'bizMchId' => env('BIZMCH_ID', false),
+            'trxQr' => $validator->validated()['trxQr'],
+        ];
+        $stringA = '';
+        foreach ($data as $key => $value) {
+            $stringA .= "$key=$value&";
+        }
+
+        $stringA = substr($stringA, 0, -1);
+        $stringB = hash("sha256", utf8_encode($stringA));
+        openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+        $data['sign'] = base64_encode($encrypted_message);
+
+        $curl = curl_init();
+
+
+        $header = array(
+            'API-Key: ' . env('API_KEY', false),
+            'X-Client-Transaction-ID: ' . Str::uuid(),
+            'Content-Type: application/json',
+        );
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('BAY_URL', false) . 'trans/verify',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30000,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => $header,
+        ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return response()->json($err, 422);
+        } else {
+            $data = json_decode($response);
+            return $this->sendResponse($data, 'Verify check successfully.');
         }
     }
 
