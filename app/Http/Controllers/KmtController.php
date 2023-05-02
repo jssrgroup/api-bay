@@ -22,16 +22,16 @@ class KmtController extends BaseController
     {
         $input = $request->all();
 
-        // $callback = [
-        //     'trxId' => $input['trxId'],
-        //     'terminalId' => $input['terminalId'],
-        //     'data' => json_encode($input)
-        // ];
+        $callback = [
+            'trxId' => $input['trxId'],
+            'terminalId' => $input['terminalId'],
+            'data' => json_encode($input)
+        ];
 
-        // $db = new firebaseRDB(env('FIREBASE_DATABASE_URL', false));
-        // $insert = $db->insert("callback/{$callback['terminalId']}", $callback);
+        $db = new firebaseRDB(env('FIREBASE_DATABASE_URL', false));
+        $insert = $db->insert("callback/{$callback['terminalId']}", $callback);
 
-        // $cb = Callback::create($callback);
+        $cb = Callback::create($callback);
 
         $res = [
             'trxId' => $input['trxId'],
