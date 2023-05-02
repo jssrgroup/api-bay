@@ -8,10 +8,12 @@ use App\Models\Callback;
 use App\firebaseRDB;
 use App\Models\Log;
 use App\Models\Qrcode;
+use App\Models\Settlement;
 use SimpleSoftwareIO\QrCode\Facades\QrCode as GQrcode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+// use Carbon\Carbon;
 
 class KmtController extends BaseController
 {
@@ -20,16 +22,31 @@ class KmtController extends BaseController
     {
         $input = $request->all();
 
-        $callback = [
+        // $callback = [
+        //     'trxId' => $input['trxId'],
+        //     'terminalId' => $input['terminalId'],
+        //     'data' => json_encode($input)
+        // ];
+
+        // $db = new firebaseRDB(env('FIREBASE_DATABASE_URL', false));
+        // $insert = $db->insert("callback/{$callback['terminalId']}", $callback);
+
+        // $cb = Callback::create($callback);
+
+        $res = [
             'trxId' => $input['trxId'],
             'terminalId' => $input['terminalId'],
-            'data' => json_encode($input)
+            // 'datetime' => Carbon::createFromFormat($input['datetime'])->format('Y-m-d H:i:s'), 
+            'datetime' => str_replace('Z', '', str_replace('T', ' ', $input['datetime'])),
+            'amount' => $input['amount'],
+            'feeMerchant' => $input['feeMerchant'],
+            'fromAccount' => $input['fromAccount'],
+            'trxStatus' => $input['trxStatus'],
+            'channel' => $input['channel'],
+            'billerId' => $input['billerId'],
         ];
 
-        $db = new firebaseRDB(env('FIREBASE_DATABASE_URL', false));
-        $insert = $db->insert("callback/{$callback['terminalId']}", $callback);
-
-        $cb = Callback::create($callback);
+        Settlement::create($res);
 
         $data = [
             'message' => 'Successful reception',
@@ -59,7 +76,7 @@ class KmtController extends BaseController
             'terminalId' => 'required|string',
         ]);
         if ($validator->fails()) {
-            return $this->sendError('Validation error.', $validator->errors(),422);
+            return $this->sendError('Validation error.', $validator->errors(), 422);
         }
 
         $data = [
