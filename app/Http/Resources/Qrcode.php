@@ -17,6 +17,7 @@ class Qrcode extends JsonResource
         return [
             'id' => $this->id,
             'trxId' => $this->trxId,
+            'terminalId' => $this->terminalId,
             'qrcodeContent' => $this->qrcodeContent,
             'qrcode' => $this->qrcode,
             'amount' => $this->amount,
