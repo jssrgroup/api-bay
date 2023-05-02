@@ -207,7 +207,7 @@ class KmtController extends BaseController
         $validator = Validator::make($request->all(), [
             'numberPerPage' => 'required',
             'pageNumber' => 'required',
-            'timeStart' => 'required',
+            // 'timeStart' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -218,7 +218,7 @@ class KmtController extends BaseController
             'bizMchId' => env('BIZMCH_ID', false),
             'numberPerPage' => $validator->validated()['numberPerPage'],
             'pageNumber' => $validator->validated()['pageNumber'],
-            'timeStart' => $validator->validated()['timeStart'],
+            // 'timeStart' => $validator->validated()['timeStart'],
         ];
         $stringA = '';
         foreach ($data as $key => $value) {
@@ -269,7 +269,7 @@ class KmtController extends BaseController
         $validator = Validator::make($request->all(), [
             'numberPerPage' => 'required',
             'pageNumber' => 'required',
-            'timeStart' => 'required',
+            // 'timeStart' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -279,7 +279,7 @@ class KmtController extends BaseController
             'bizMchId' => env('BIZMCH_ID', false),
             'numberPerPage' => $validator->validated()['numberPerPage'],
             'pageNumber' => $validator->validated()['pageNumber'],
-            'timeStart' => $validator->validated()['timeStart'],
+            // 'timeStart' => $validator->validated()['timeStart'],
         ];
         $stringA = '';
         foreach ($data as $key => $value) {
