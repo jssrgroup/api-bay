@@ -19,8 +19,12 @@ class Qrcode extends JsonResource
             'trxId' => $this->trxId,
             'qrcodeContent' => $this->qrcodeContent,
             'qrcode' => $this->qrcode,
-            'created_at' => $this->created_at->format('d/m/Y'),
-            'updated_at' => $this->updated_at->format('d/m/Y'),
+            'amount' => $this->amount,
+            'reference1' => $this->reference1,
+            'reference2' => $this->reference2,
+            'remark' => $this->remark,
+            'created_at' => $this->created_at->format('d/m/Y H:i:s'),
+            'updated_at' => $this->updated_at->format('d/m/Y H:i:s'),
         ];
     }
 }

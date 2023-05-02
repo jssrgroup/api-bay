@@ -403,6 +403,22 @@ class KmtController extends BaseController
         }
     }
 
+    public function qrCodes(Request $request)
+    {
+        $qrCodes = Qrcode::all();
+
+        return $this->sendResponse($qrCodes, 'qrcode list retrived successfully.');
+
+    }
+
+    public function settles(Request $request)
+    {
+        $settles = Settlement::all();
+
+        return $this->sendResponse($settles, 'settles list retrived successfully.');
+
+    }
+
     public function getSign(Request $request)
     {
         $data = $request->data;
