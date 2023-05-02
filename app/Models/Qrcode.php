@@ -10,6 +10,7 @@ class Qrcode extends Model
     use HasFactory;
 
     protected $fillable = [
-        'trxId', 'terminalId', 'qrcodeContent' , 'qrcode'
+        'trxId', 'terminalId', 'qrcodeContent' , 'qrcode',
+        'amount','reference1','reference2','remark'
     ];
 }

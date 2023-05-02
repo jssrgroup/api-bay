@@ -131,6 +131,10 @@ class KmtController extends BaseController
                         'terminalId' => $data['terminalId'],
                         'qrcodeContent' => $responseArr['qrcodeContent'], //$responseArr['qrcodeContent'], //
                         'qrcode' => base64_encode(GQrcode::size(200)->format('png')->generate($responseArr['qrcodeContent'])),
+                        'amount' => $data['amount'],
+                        'reference1' => $data['reference1'],
+                        'reference2' => $data['reference2'],
+                        'remark' => $data['remark'],
                     ];
 
                     Qrcode::create($res);
