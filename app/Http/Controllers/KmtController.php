@@ -408,15 +408,27 @@ class KmtController extends BaseController
         $qrCodes = Qrcode::all();
 
         return $this->sendResponse($qrCodes, 'qrcode list retrived successfully.');
-
     }
 
     public function settles(Request $request)
     {
-        $settles = Settlement::all();
+        $validator = Validator::make($request->all(), [
+            'from' => 'required',
+            'to' => 'required',
+            // 'timeStart' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+        $from = date($validator->validated()['from'] . ' 00:00:00');
+        $to = date($validator->validated()['to'] . ' 23:59:59');
+
+        $settles = Settlement::whereBetween('datetime', [$from, $to])
+            ->orderBy('datetime', 'asc')
+            ->get();
+        // $settles = Settlement::all();
 
         return $this->sendResponse($settles, 'settles list retrived successfully.');
-
     }
 
     public function getSign(Request $request)
