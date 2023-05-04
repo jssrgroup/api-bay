@@ -13,6 +13,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode as GQrcode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Libern\QRCodeReader\QRCodeReader;
 // use Carbon\Carbon;
 
 class KmtController extends BaseController
@@ -424,6 +425,7 @@ class KmtController extends BaseController
         $to = date($validator->validated()['to'] . ' 23:59:59');
 
         $settles = Settlement::whereBetween('datetime', [$from, $to])
+            ->rightJoin('qrcodes', 'settlements.trxId', '=', 'qrcodes.trxId')
             ->orderBy('datetime', 'asc')
             ->get();
         // $settles = Settlement::all();
@@ -441,5 +443,77 @@ class KmtController extends BaseController
             "data" => $data,
             "sign" => base64_encode($encrypted_message)
         ]]);
+    }
+
+    public function readQrCode(Request $request)
+    {
+        $requestData = $request->all();
+        // return $requestData;
+        $validator = Validator::make($requestData, [
+            'attachment' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        if ($request->has('attachment')) {
+            $QRCodeReader = new QRCodeReader();
+            $qrcode_text = $QRCodeReader->decode($request->attachment);
+            // $response["data"] = $qrcode_text;
+            // $response["status"] = "successs";
+            // $response["message"] = "Success! image(s) uploaded";
+            $data = [
+                'bizMchId' => env('BIZMCH_ID', false),
+                'trxQr' => $qrcode_text,
+            ];
+            $stringA = '';
+            foreach ($data as $key => $value) {
+                $stringA .= "$key=$value&";
+            }
+
+            $stringA = substr($stringA, 0, -1);
+            $stringB = hash("sha256", utf8_encode($stringA));
+            openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+            $data['sign'] = base64_encode($encrypted_message);
+
+            $curl = curl_init();
+
+
+            $header = array(
+                'API-Key: ' . env('API_KEY', false),
+                'X-Client-Transaction-ID: ' . Str::uuid(),
+                'Content-Type: application/json',
+            );
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => env('BAY_URL', false) . 'trans/verify',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30000,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_HTTPHEADER => $header,
+            ));
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+
+            curl_close($curl);
+
+            if ($err) {
+                return response()->json($err, 422);
+            } else {
+                $data = json_decode($response);
+                return $this->sendResponse($data, 'Verify check successfully.');
+            }
+        } else {
+            // $response["status"] = "failed";
+            // $response["message"] = "Failed! image(s) not uploaded";
+            return $this->sendResponse([], 'Failed! image(s) not uploaded.');
+        }
+
+        return response()->json($response);
     }
 }
