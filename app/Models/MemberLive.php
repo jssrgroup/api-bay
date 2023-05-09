@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class MemberLive extends Model
+{
+    use HasFactory;
+
+    protected $table = 'tb_member_online_temp';
+    protected $primaryKey = 'INDX';
+    protected $connection = 'mysql2';
+
+    protected $fillable = [];
+
+    protected $guarded = [];
+
+    protected $hidden = [
+
+        // 'INDX', 'CUSTOMER_TYPE', 'TRANSACTION_TYPE', 'FULL_NAME', 'COMPANY_NAME', 'NUMBER_CARD',
+        // 'MOBILE', 'EMAIL', 'CUSTOMER_CATE', 'SLIP', 'BANK_NAME_USER', 'BANK_NAME',
+        // 'BANK_NUMBER', 'ADDRESS_TYPE', 'ADDRESS', 'PROVINCE_ID', 'AMPHUR_ID', 'DISTRICT_ID',
+        // 'ZIPCODE', 'DOCUMENT_CARD', 'EXPIRED_CARD', 'DOCUMENT_COMPANY', 'EXPIRED_COMPANY', 'DOCUMENT_PP20',
+        // 'EXPIRED_PP20', 'DOCUMENT_REGISTER_COMPANY', 'EXPIRED_REGISTER_COMPANY', 'DOCUMENT_CARD_READER',
+        // 'EXPIRED_CARD_READER', 'DOCUMENT_POWER_OF_ATTORNEY', 'EXPIRED_ATTORNEY', 'DATE_CREATE', 'APPROVE_FINANCE',
+        // 'FINANCE_FULLNAME', 'FINANCE_USER', 'FINANCE_STAMP', 'FINANCE_RECHECK', 'APPROVE_ACCOUNT',
+        // 'ACCOUNT_FULLNAME', 'ACCOUNT_USER', 'ACCOUNT_STAMP', 'ACCOUNT_RECHECK', 'APPROVE_ADVERT',
+        // 'ADVERT_FULLNAME', 'ADVERT_USER', 'ADVERT_STAMP', 'ADVERT_RECHECK', 'STATUS_SMS',
+        // 'NAME_ADVICE', 'STATUS', 'ACCPAC_ID', 'BUY', 'SOURCE', 'MONEY_IN', 'DATE_TIME_IN', 'CLEAR_STATUS',
+        // 'CLEAR_FULLNAME', 'CLEAR_USER', 'CLEAR_STAMP', 'CLEAR_TEXT', 'STATUS_TRAN', 'CUSTOMER_ADDRESS',
+        // 'CUSTOMER_PROVINCE', 'CUSTOMER_AMPHUR', 'CUSTOMER_DISTRICT', 'CUSTOMER_ZIPCODE', 'CUSTOMER_ADDRESS_TRAN', 'STATUS_ADDRESS_DOC',
+        // 'CUSTOMER_ADDRESS_DOC', 'STATUS_JOIN_AUCTION', 'OCCUPATION_STATUS', 'OCCUPATION_TEXT', 'LEASING_STATUS', 'ON_PAYMENT_CUSTOMER',
+        // 'ON_PAYMENT', 'TERMINAL_ID', 'REFERENCE_ONE', 'REFERENCE_TWO', 'TRX_ID', 'QR_REMARK',
+    ];
+
+    public $timestamps = false;
+}

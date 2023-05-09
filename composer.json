@@ -16,7 +16,8 @@
         "laravel/tinker": "^2.5",
         "libern/qr-code-reader": "^1.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
-        "tymon/jwt-auth": "^1.0"
+        "tymon/jwt-auth": "^1.0",
+        "zxing/qr-reader": "^1.2"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

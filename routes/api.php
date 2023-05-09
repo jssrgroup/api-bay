@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KmtController;
 use App\Http\Controllers\QrcodeController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MemberLiveController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -29,6 +31,17 @@ Route::group([
     Route::get('/user-profile', [AuthController::class, 'userProfile']);    
 });
 
+Route::group(['prefix' => 'member'], function () {
+    Route::get('/', [MemberController::class, 'index']);
+    Route::get('/{id}', [MemberController::class, 'show']);
+    Route::post('/', [MemberController::class, 'store']);
+});
+
+Route::group(['prefix' => 'memberlive'], function () {
+    Route::get('/', [MemberLiveController::class, 'index']);
+    Route::get('/{id}', [MemberLiveController::class, 'show']);
+});
+
 Route::post('/callback', [KmtController::class, 'callback']);
 Route::get('/publickey', function(){
     return env('PUBLIC_KEY', false);
@@ -48,6 +61,7 @@ Route::get('/uuid', function(){
 Route::get('/qrcode', [KmtController::class, 'qrCode']);
 Route::get('/qrcodes', [KmtController::class, 'qrCodes']);
 Route::post('/readqrcode', [KmtController::class, 'readQrCode']);
+Route::post('/readqrcode2', [KmtController::class, 'readQrCode2']);
 Route::get('/transection/{id}', [KmtController::class, 'transection']);
 Route::get('/transection', [KmtController::class, 'transectionList']);
 Route::get('/settle', [KmtController::class, 'settleList']);

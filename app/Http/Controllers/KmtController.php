@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Libern\QRCodeReader\QRCodeReader;
+use Zxing\QrReader;
 // use Carbon\Carbon;
 
 class KmtController extends BaseController
@@ -459,9 +460,11 @@ class KmtController extends BaseController
         if ($request->has('attachment')) {
             $QRCodeReader = new QRCodeReader();
             $qrcode_text = $QRCodeReader->decode($request->attachment);
-            // $response["data"] = $qrcode_text;
-            // $response["status"] = "successs";
-            // $response["message"] = "Success! image(s) uploaded";
+            $response["data"] = $qrcode_text;
+            $response["status"] = "successs";
+            $response["message"] = "Success! image(s) uploaded";
+            return response()->json($response);
+            
             $data = [
                 'bizMchId' => env('BIZMCH_ID', false),
                 'trxQr' => $qrcode_text,
@@ -513,7 +516,80 @@ class KmtController extends BaseController
             // $response["message"] = "Failed! image(s) not uploaded";
             return $this->sendResponse([], 'Failed! image(s) not uploaded.');
         }
+    }
 
-        return response()->json($response);
+    public function readQrCode2(Request $request)
+    {
+        $requestData = $request->all();
+        // return $requestData;
+        $validator = Validator::make($requestData, [
+            'attachment' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        if ($request->has('attachment')) {
+            // $QRCodeReader = new QRCodeReader();//$request->file('attachment')
+            // $qrcode_text = $QRCodeReader->decode($request->attachment);
+            $qr = new QrReader(__DIR__.'/../../../public/images/qrcode1.png');
+            $qrcode_text = $qr->decode();
+            $response["data"] = $qrcode_text;
+            $response["qr"] = __DIR__.'/../../../public/images/qrcode1.png';//$request->file('attachment');
+            $response["status"] = "successs";
+            $response["message"] = "Success! image(s) uploaded";
+            return response()->json($response);
+
+            $data = [
+                'bizMchId' => env('BIZMCH_ID', false),
+                'trxQr' => $qrcode_text,
+            ];
+            $stringA = '';
+            foreach ($data as $key => $value) {
+                $stringA .= "$key=$value&";
+            }
+
+            $stringA = substr($stringA, 0, -1);
+            $stringB = hash("sha256", utf8_encode($stringA));
+            openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+            $data['sign'] = base64_encode($encrypted_message);
+
+            $curl = curl_init();
+
+
+            $header = array(
+                'API-Key: ' . env('API_KEY', false),
+                'X-Client-Transaction-ID: ' . Str::uuid(),
+                'Content-Type: application/json',
+            );
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => env('BAY_URL', false) . 'trans/verify',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30000,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_HTTPHEADER => $header,
+            ));
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+
+            curl_close($curl);
+
+            if ($err) {
+                return response()->json($err, 422);
+            } else {
+                $data = json_decode($response);
+                return $this->sendResponse($data, 'Verify check successfully.');
+            }
+        } else {
+            // $response["status"] = "failed";
+            // $response["message"] = "Failed! image(s) not uploaded";
+            return $this->sendResponse([], 'Failed! image(s) not uploaded.');
+        }
     }
 }
