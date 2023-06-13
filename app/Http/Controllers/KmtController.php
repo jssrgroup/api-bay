@@ -67,7 +67,8 @@ class KmtController extends BaseController
 
         $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
         $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
-
+        
+        //ส่งไลน์
         $this->sendLineNotify($message);
         return response()->json($data);
     }
