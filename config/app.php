@@ -178,6 +178,8 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         //Qrcode
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
+        //firebase
+        // Kreait\Laravel\Firebase\ServiceProvider::class,
 
     ],
 

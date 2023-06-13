@@ -58,7 +58,7 @@ Route::get('/channal', function(){
 Route::get('/uuid', function(){
     return Str::uuid();
 });
-Route::get('/qrcode', [KmtController::class, 'qrCode']);
+Route::post('/qrcode', [KmtController::class, 'qrCode'])->middleware('apikey');
 Route::get('/qrcodes', [KmtController::class, 'qrCodes']);
 Route::post('/readqrcode', [KmtController::class, 'readQrCode']);
 Route::post('/readqrcode2', [KmtController::class, 'readQrCode2']);
@@ -69,6 +69,7 @@ Route::get('/settles', [KmtController::class, 'settles']);
 Route::get('/verify', [KmtController::class, 'verify']);
 
 Route::get('/sign', [KmtController::class, 'getSign']);
+Route::post('/sign', [KmtController::class, 'setSign']);
 
 // Route::middleware('api')->group( function () {
     Route::resource('qrcodes', QrcodeController::class);

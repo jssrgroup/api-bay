@@ -15,10 +15,15 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Libern\QRCodeReader\QRCodeReader;
 use Zxing\QrReader;
+use Kreait\Firebase\Contract\Database;
 // use Carbon\Carbon;
 
 class KmtController extends BaseController
 {
+    public function __construct(Database $database)
+    {
+        $this->database = $database;
+    }
 
     public function callback(Request $request)
     {
@@ -30,8 +35,11 @@ class KmtController extends BaseController
             'data' => json_encode($input)
         ];
 
-        $db = new firebaseRDB(env('FIREBASE_DATABASE_URL', false));
-        $insert = $db->insert("callback/{$callback['terminalId']}", $callback);
+        // $db = new firebaseRDB(env('FIREBASE_DATABASE_URL', false));
+        // $insert = $db->insert("callback/{$callback['terminalId']}", $callback);
+
+        $ref = $this->database->getReference("callback/{$callback['terminalId']}");
+        $ref->set($callback);
 
         $cb = Callback::create($callback);
 
@@ -64,7 +72,11 @@ class KmtController extends BaseController
         $stringB = hash("sha256", utf8_encode($stringA));
         openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
         $data['sign'] = base64_encode($encrypted_message);
+        
+        $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
+        $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
 
+        $this->sendLineNotify($message);
         return response()->json($data);
     }
 
@@ -80,6 +92,9 @@ class KmtController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation error.', $validator->errors(), 422);
         }
+
+        return $this->sendResponse($validator->validated(),'Test');
+        exit;
 
         $data = [
             'amount' => $validator->validated()['amount'],
@@ -437,13 +452,53 @@ class KmtController extends BaseController
 
     public function getSign(Request $request)
     {
+
         $data = $request->data;
+
+        $reference = $this->database->getReference('film');
+
+        $snapshot = $reference->getSnapshot();
+
+        $value = $snapshot->getValue();
+        // $factory = (new Factory)
+        //     ->withServiceAccount('jssr-login-firebase-firebase-adminsdk.json')
+        //     ->withDatabaseUri('https://jssr-login-firebase-default-rtdb.asia-southeast1.firebasedatabase.app/');
+
+        // $auth = $factory->createAuth();
+
+        // $email = 'dev1.deverdie@gmail.com';
+        // $clearTextPassword = '122344566';
+
+        // $signInResult = $auth->signInWithEmailAndPassword($email, $clearTextPassword);
 
         openssl_public_encrypt($data, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
 
         return response()->json(["status" => 200, "data" => [
             "data" => $data,
-            "sign" => base64_encode($encrypted_message)
+            "sign" => base64_encode($encrypted_message),
+            "value" => $value
+        ]]);
+    }
+
+    public function setSign(Request $request)
+    {
+
+        $requestData = $request->all();
+
+        $ref = $this->database->getReference('film')->push();
+        $key = $ref->getKey();
+
+        // $newDataRef = $ref->push();
+        // $newDataKey = $newDataRef->getKey();
+
+        $ref->set($requestData);
+
+        openssl_public_encrypt($request->title, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+
+        return response()->json(["status" => 200, "data" => [
+            "data" => $requestData,
+            "sign" => base64_encode($encrypted_message),
+            "key" => $key
         ]]);
     }
 
@@ -465,7 +520,7 @@ class KmtController extends BaseController
             $response["status"] = "successs";
             $response["message"] = "Success! image(s) uploaded";
             return response()->json($response);
-            
+
             $data = [
                 'bizMchId' => env('BIZMCH_ID', false),
                 'trxQr' => $qrcode_text,
@@ -533,10 +588,10 @@ class KmtController extends BaseController
         if ($request->has('attachment')) {
             // $QRCodeReader = new QRCodeReader();//$request->file('attachment')
             // $qrcode_text = $QRCodeReader->decode($request->attachment);
-            $qr = new QrReader(__DIR__.'/../../../public/images/qrcode1.png');
+            $qr = new QrReader(__DIR__ . '/../../../public/images/qrcode1.png');
             $qrcode_text = $qr->decode();
             $response["data"] = $qrcode_text;
-            $response["qr"] = __DIR__.'/../../../public/images/qrcode1.png';//$request->file('attachment');
+            $response["qr"] = __DIR__ . '/../../../public/images/qrcode1.png'; //$request->file('attachment');
             $response["status"] = "successs";
             $response["message"] = "Success! image(s) uploaded";
             return response()->json($response);
@@ -592,5 +647,34 @@ class KmtController extends BaseController
             // $response["message"] = "Failed! image(s) not uploaded";
             return $this->sendResponse([], 'Failed! image(s) not uploaded.');
         }
+    }
+
+    
+    function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
+    {
+        // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // ใส่ Token ที่สร้างไว้
+        $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // ใส่ Token ที่สร้างไว้
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://notify-api.line.me/api/notify");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "message=" . $message);
+        $headers = array('Content-type: application/x-www-form-urlencoded', 'Authorization: Bearer ' . $token . '',);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($ch);
+
+        if (curl_error($ch)) {
+            // echo 'error:' . curl_error($ch);
+            // return $this->sendError(curl_error($ch), 422);
+            return false;
+        } else {
+            // $res = json_decode($result, true);
+            // return $this->sendResponse($res, 'sent linenotify.');
+            return true;
+        }
+        curl_close($ch);
     }
 }
