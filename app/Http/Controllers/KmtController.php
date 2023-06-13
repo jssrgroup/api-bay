@@ -72,17 +72,10 @@ class KmtController extends BaseController
         $stringB = hash("sha256", utf8_encode($stringA));
         openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
         $data['sign'] = base64_encode($encrypted_message);
-        
+
         $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
         $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
 
-<<<<<<< HEAD
-=======
-        $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
-        $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
-        
-        //ส่งไลน์
->>>>>>> 863bf09e6e1abb84470f20a9521a2aeed771ecfb
         $this->sendLineNotify($message);
         return response()->json($data);
     }
@@ -100,8 +93,8 @@ class KmtController extends BaseController
             return $this->sendError('Validation error.', $validator->errors(), 422);
         }
 
-        return $this->sendResponse($validator->validated(),'Test');
-        exit;
+        // return $this->sendResponse($validator->validated(),'Test');
+        // exit;
 
         $data = [
             'amount' => $validator->validated()['amount'],
@@ -655,18 +648,11 @@ class KmtController extends BaseController
             return $this->sendResponse([], 'Failed! image(s) not uploaded.');
         }
     }
-<<<<<<< HEAD
-
-    
-    function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
-    {
-=======
     
 
     function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
     {
         //Add Access Token
->>>>>>> 863bf09e6e1abb84470f20a9521a2aeed771ecfb
         // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // ใส่ Token ที่สร้างไว้
         $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // ใส่ Token ที่สร้างไว้
 
