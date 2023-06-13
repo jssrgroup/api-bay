@@ -76,6 +76,13 @@ class KmtController extends BaseController
         $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
         $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
 
+<<<<<<< HEAD
+=======
+        $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
+        $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
+        
+        //ส่งไลน์
+>>>>>>> 863bf09e6e1abb84470f20a9521a2aeed771ecfb
         $this->sendLineNotify($message);
         return response()->json($data);
     }
@@ -648,10 +655,18 @@ class KmtController extends BaseController
             return $this->sendResponse([], 'Failed! image(s) not uploaded.');
         }
     }
+<<<<<<< HEAD
 
     
     function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
     {
+=======
+    
+
+    function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
+    {
+        //Add Access Token
+>>>>>>> 863bf09e6e1abb84470f20a9521a2aeed771ecfb
         // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // ใส่ Token ที่สร้างไว้
         $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // ใส่ Token ที่สร้างไว้
 
