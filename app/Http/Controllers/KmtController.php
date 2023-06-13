@@ -602,6 +602,7 @@ class KmtController extends BaseController
 
     function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
     {
+        //Add Access Token
         // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // ใส่ Token ที่สร้างไว้
         $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // ใส่ Token ที่สร้างไว้
 
