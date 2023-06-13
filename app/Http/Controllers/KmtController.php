@@ -65,6 +65,10 @@ class KmtController extends BaseController
         openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
         $data['sign'] = base64_encode($encrypted_message);
 
+        $d = str_replace('Z', '', str_replace('T', ' ', $input['datetime']));
+        $message = "ได้รับเงินโอนเข้า จากบัญชี " . $input['fromAccount'] . " จำนวน " . $input['amount'] . " บาท เวลา $d เลขที่ทำรายการ " . $input['trxId'];;
+
+        $this->sendLineNotify($message);
         return response()->json($data);
     }
 
@@ -592,5 +596,34 @@ class KmtController extends BaseController
             // $response["message"] = "Failed! image(s) not uploaded";
             return $this->sendResponse([], 'Failed! image(s) not uploaded.');
         }
+    }
+    
+
+    function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
+    {
+        // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // ใส่ Token ที่สร้างไว้
+        $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // ใส่ Token ที่สร้างไว้
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://notify-api.line.me/api/notify");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "message=" . $message);
+        $headers = array('Content-type: application/x-www-form-urlencoded', 'Authorization: Bearer ' . $token . '',);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($ch);
+
+        if (curl_error($ch)) {
+            // echo 'error:' . curl_error($ch);
+            // return $this->sendError(curl_error($ch), 422);
+            return false;
+        } else {
+            // $res = json_decode($result, true);
+            // return $this->sendResponse($res, 'sent linenotify.');
+            return true;
+        }
+        curl_close($ch);
     }
 }
