@@ -248,24 +248,22 @@ class KmtController extends BaseController
         }
     }
 
-    public function refundDetail(Request $request)
+    public function refundDetail(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'numberPerPage' => 'required',
-            'pageNumber' => 'required',
-            // 'timeStart' => 'required',
+        $input['refundId'] = $id;
+        $validator = Validator::make($input, [
+            'refundId' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
+ 
         $data = [
-            'billerId' => env('BILLER_ID', false),
             'bizMchId' => env('BIZMCH_ID', false),
-            'numberPerPage' => $validator->validated()['numberPerPage'],
-            'pageNumber' => $validator->validated()['pageNumber'],
-            // 'timeStart' => $validator->validated()['timeStart'],
+            'refundId' => $validator->validated()['refundId'],
         ];
+
         $stringA = '';
         foreach ($data as $key => $value) {
             $stringA .= "$key=$value&";
@@ -286,7 +284,7 @@ class KmtController extends BaseController
         );
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('BAY_URL', false) . 'trans/list',
+            CURLOPT_URL => env('BAY_URL', false) . 'trans/refund/detail',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -306,7 +304,7 @@ class KmtController extends BaseController
             return response()->json($err, 422);
         } else {
             $data = json_decode($response);
-            return $this->sendResponse(TransectionResource::collection($data->data->transactions), 'Transection list retrived successfully.');
+            return $this->sendResponse($data->data->refund, 'Refund retrived successfully.');
         }
     }
 
@@ -322,7 +320,6 @@ class KmtController extends BaseController
         }
 
         $data = [
-            'billerId' => env('BILLER_ID', false),
             'bizMchId' => env('BIZMCH_ID', false),
             'numberPerPage' => $validator->validated()['numberPerPage'],
             'pageNumber' => $validator->validated()['pageNumber'],
@@ -348,7 +345,7 @@ class KmtController extends BaseController
         );
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('BAY_URL', false) . 'trans/list',
+            CURLOPT_URL => env('BAY_URL', false) . 'trans/refund/list',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -368,7 +365,7 @@ class KmtController extends BaseController
             return response()->json($err, 422);
         } else {
             $data = json_decode($response);
-            return $this->sendResponse(TransectionResource::collection($data->data->transactions), 'Transection list retrived successfully.');
+            return $this->sendResponse($data->data->refunds, 'Transection list retrived successfully.');
         }
     }
 

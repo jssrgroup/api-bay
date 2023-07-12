@@ -67,6 +67,9 @@ Route::get('/transection', [KmtController::class, 'transectionList']);
 Route::get('/settle', [KmtController::class, 'settleList']);
 Route::get('/settles', [KmtController::class, 'settles']);
 Route::get('/verify', [KmtController::class, 'verify']);
+Route::post('/refund', [KmtController::class, 'refund']);
+Route::get('/refund/{id}', [KmtController::class, 'refundDetail']);
+Route::get('/refund', [KmtController::class, 'refundList']);
 
 Route::get('/sign', [KmtController::class, 'getSign']);
 Route::post('/sign', [KmtController::class, 'setSign']);
