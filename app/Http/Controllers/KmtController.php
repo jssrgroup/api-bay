@@ -183,6 +183,195 @@ class KmtController extends BaseController
         }
     }
 
+    public function refund(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'refundAmount' => 'required|string',
+            'trxId' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $data = [
+            'bizMchId' => env('BIZMCH_ID', false),
+            'refundAmount' => $validator->validated()['refundAmount'],
+            'remark' => 'Refund to '.$request['trxId'],
+            'trxId' => $validator->validated()['trxId'],
+        ];
+
+
+        $stringA = '';
+        foreach ($data as $key => $value) {
+            $stringA .= "$key=$value&";
+        }
+
+        $stringA = substr($stringA, 0, -1);
+        $stringB = hash("sha256", utf8_encode($stringA));
+        openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+        $data['sign'] = base64_encode($encrypted_message);
+
+
+        // return response()->json($data, 200);
+        // exit;
+
+        $curl = curl_init();
+
+        $header = array(
+            'API-Key: ' . env('API_KEY', false),
+            'X-Client-Transaction-ID: ' . Str::uuid(),
+            'Content-Type: application/json',
+        );
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('BAY_URL', false) . 'trans/refund',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30000,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => $header,
+        ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return response()->json($err, 422);
+        } else {
+            $data = json_decode($response);
+            return $this->sendResponse($data, 'Refund successfully.');
+        }
+    }
+
+    public function refundDetail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'numberPerPage' => 'required',
+            'pageNumber' => 'required',
+            // 'timeStart' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $data = [
+            'billerId' => env('BILLER_ID', false),
+            'bizMchId' => env('BIZMCH_ID', false),
+            'numberPerPage' => $validator->validated()['numberPerPage'],
+            'pageNumber' => $validator->validated()['pageNumber'],
+            // 'timeStart' => $validator->validated()['timeStart'],
+        ];
+        $stringA = '';
+        foreach ($data as $key => $value) {
+            $stringA .= "$key=$value&";
+        }
+
+        $stringA = substr($stringA, 0, -1);
+        $stringB = hash("sha256", utf8_encode($stringA));
+        openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+        $data['sign'] = base64_encode($encrypted_message);
+
+        $curl = curl_init();
+
+
+        $header = array(
+            'API-Key: ' . env('API_KEY', false),
+            'X-Client-Transaction-ID: ' . Str::uuid(),
+            'Content-Type: application/json',
+        );
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('BAY_URL', false) . 'trans/list',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30000,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => $header,
+        ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return response()->json($err, 422);
+        } else {
+            $data = json_decode($response);
+            return $this->sendResponse(TransectionResource::collection($data->data->transactions), 'Transection list retrived successfully.');
+        }
+    }
+
+    public function refundList(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'numberPerPage' => 'required',
+            'pageNumber' => 'required',
+            // 'timeStart' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $data = [
+            'billerId' => env('BILLER_ID', false),
+            'bizMchId' => env('BIZMCH_ID', false),
+            'numberPerPage' => $validator->validated()['numberPerPage'],
+            'pageNumber' => $validator->validated()['pageNumber'],
+            // 'timeStart' => $validator->validated()['timeStart'],
+        ];
+        $stringA = '';
+        foreach ($data as $key => $value) {
+            $stringA .= "$key=$value&";
+        }
+
+        $stringA = substr($stringA, 0, -1);
+        $stringB = hash("sha256", utf8_encode($stringA));
+        openssl_public_encrypt($stringB, $encrypted_message, env('PUBLIC_KEY', false), OPENSSL_PKCS1_PADDING);
+        $data['sign'] = base64_encode($encrypted_message);
+
+        $curl = curl_init();
+
+
+        $header = array(
+            'API-Key: ' . env('API_KEY', false),
+            'X-Client-Transaction-ID: ' . Str::uuid(),
+            'Content-Type: application/json',
+        );
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('BAY_URL', false) . 'trans/list',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30000,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => $header,
+        ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return response()->json($err, 422);
+        } else {
+            $data = json_decode($response);
+            return $this->sendResponse(TransectionResource::collection($data->data->transactions), 'Transection list retrived successfully.');
+        }
+    }
+
     public function transection(Request $request, $id)
     {
         $input['trxId'] = $id;
@@ -443,7 +632,7 @@ class KmtController extends BaseController
         $settles = Settlement::whereBetween('datetime', [$from, $to])
             ->rightJoin('qrcodes', 'settlements.trxId', '=', 'qrcodes.trxId')
             ->rightJoin('members', 'settlements.trxId', '=', 'members.TRX_ID')
-            ->orderBy('datetime', 'asc')
+            ->orderBy('datetime', 'desc')
             ->get();
         // $settles = Settlement::all();
 
@@ -653,8 +842,9 @@ class KmtController extends BaseController
     function sendLineNotify($message = "แจ้งเตือนยอดเงินเข้า")
     {
         //Add Access Token
-        // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // ใส่ Token ที่สร้างไว้
-        $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // ใส่ Token ที่สร้างไว้
+        // $token = "KbMiu0C9A0ReFrrTUndSrsj0Exo6QsYnk1ZbHWijPGu"; // Prod
+        // $token = "j0dUfyfm5smoiowKSw6HyP3AIWVynqxRZ9MFk8lgLFs"; // Dev
+        $token = "BwmcgrguD18xyzSPTyFl3NmFIy2JER9JrlPBx6mHlNq"; // Register Group
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "https://notify-api.line.me/api/notify");

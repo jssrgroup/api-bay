@@ -21,8 +21,22 @@ class ApiKeyIsValid
                 'success' => false,
                 'message' => 'api-key invalid.',
 
-            ),412);
+            ), 412);
         }
+        // if (!isset($request->header()['x-forwarded-for']) || $request->header()['x-forwarded-for'] != '2403:6200:8810:9836:91ee:e555:7878:5a61') {
+        //     return response()->json(array(
+        //         'success' => false,
+        //         'message' => 'incoming ip.',
+
+        //     ), 511);
+        // }
+        // if (!isset($request->header()['Content-Length']) || $request->header()['Content-Length'] != 90) {
+        //     return response()->json(array(
+        //         'success' => false,
+        //         'message' => 'content incorect',
+
+        //     ), 411);
+        // }
         return $next($request);
     }
 }
