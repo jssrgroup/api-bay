@@ -627,8 +627,8 @@ class KmtController extends BaseController
         $to = date($validator->validated()['to'] . ' 23:59:59');
 
         $settles = Settlement::whereBetween('datetime', [$from, $to])
-            ->rightJoin('qrcodes', 'settlements.trxId', '=', 'qrcodes.trxId')
-            ->rightJoin('members', 'settlements.trxId', '=', 'members.TRX_ID')
+            ->leftJoin('qrcodes', 'settlements.trxId', '=', 'qrcodes.trxId')
+            ->leftJoin('members', 'settlements.trxId', '=', 'members.TRX_ID')
             ->orderBy('datetime', 'desc')
             ->get();
         // $settles = Settlement::all();
